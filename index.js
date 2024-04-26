@@ -1,5 +1,6 @@
 import express from "express";
 import { rateLimit } from "express-rate-limit";
+import { slowDown } from "express-slow-down";
 
 const app = express();
 
@@ -25,21 +26,19 @@ const limiter = rateLimit({
   message: "Too many request",
 });
 
-app.get("/", limiter, (req, res) =>
+const slow_down = slowDown({
+  windowMs: 30 * 1000,
+  delayAfter: 5, // allow 5 requests per 30 seconds
+  delayMs: (hits) => hits * 500, // Add 500ms of delay to every request after the 5th one.
+});
+
+app.get("/request-limiter", limiter, (req, res) =>
   res.send("Hello from a rate limitted app.")
 );
 
-app.get("/api", limiter, (req, res) =>
-  res.send("Only certain number requests allowed per s/m/d")
+app.get("/slow-down", slow_down, (req, res) =>
+  res.send("This is an open endpoint")
 );
-
-app.get("/open", (req, res) => res.send("This is an open endpoint"));
-
-app.get("/register", (req, res) => res.send("Register page"));
-app.post("/register", (req, res) => res.send("Ok register"));
-
-app.get("/login", (req, res) => res.send("Login page"));
-app.post("/login", (req, res) => res.send("Ok login"));
 
 app.listen(3000, () => {
   console.log("🚀 server on port 3000 🔐");
