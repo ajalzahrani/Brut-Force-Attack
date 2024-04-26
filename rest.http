@@ -5,3 +5,7 @@ get http://localhost:3000/request-limiter
 ####
 
 GET http://localhost:3000/slow-down
+
+####
+
+GET http://localhost:3000/cache-data
